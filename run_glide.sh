@@ -1,0 +1,1 @@
+./mupen64plus.app/Contents/MacOS/mupen64plus --gfx mupen64plus-video-glide64mk2 --savestate /Users/quinton/Library/Application\ Support/Mupen64Plus/save/THE\ LEGEND\ OF\ ZELDA\ \(unknown\ rom\).st0 --resolution 1024x768 "$@"
