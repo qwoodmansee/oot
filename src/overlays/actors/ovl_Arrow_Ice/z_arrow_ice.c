@@ -204,6 +204,8 @@ void ArrowIce_Draw(Actor* thisx, GlobalContext* globalCtx) {
 
         OPEN_DISPS(globalCtx->state.gfxCtx, "../z_arrow_ice.c", 610);
 
+        // without these, the arrow effect works but tends to "lag" behind the arrow tip
+        // my theory is that these move the center of the effect to line up with the  camera or arrow tip before doing all the other stuff
         Matrix_Translate(tranform->world.pos.x, tranform->world.pos.y, tranform->world.pos.z, MTXMODE_NEW);
         Matrix_RotateY(tranform->shape.rot.y * (M_PI / 0x8000), MTXMODE_APPLY);
         Matrix_RotateX(tranform->shape.rot.x * (M_PI / 0x8000), MTXMODE_APPLY);
@@ -221,23 +223,31 @@ void ArrowIce_Draw(Actor* thisx, GlobalContext* globalCtx) {
         }
 
         // Draw ice on the arrow
-        func_80093D84(globalCtx->state.gfxCtx);
-        gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 170, 255, 255, this->alpha);
-        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 255, 128);
-        Matrix_RotateZYX(0x4000, 0x0, 0x0, MTXMODE_APPLY);
+        func_80093D84(globalCtx->state.gfxCtx); // not sure what this does - MAY draw the small arrow as it flies through the air
+        gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 170, 255, 255, this->alpha); // base color of the swirling cylinder
+        gDPSetEnvColor(POLY_XLU_DISP++, 0, 0, 255, 128); // interesting "ice chips" portion of the swirling cylinder. without this it's very plainly one color
+        Matrix_RotateZYX(0x4000, 0x0, 0x0, MTXMODE_APPLY); // positions (via rotation) the swirling cylinder to line up with arrow. (does not cause the spin)
         if (this->timer != 0) {
-            Matrix_Translate(0.0f, 0.0f, 0.0f, MTXMODE_APPLY);
+            Matrix_Translate(0.0f, 0.0f, 0.0f, MTXMODE_APPLY); // aligns swirling cylinder as arrow is being pulled out and knocked
         } else {
-            Matrix_Translate(0.0f, 1500.0f, 0.0f, MTXMODE_APPLY);
+            Matrix_Translate(0.0f, 1500.0f, 0.0f, MTXMODE_APPLY); // aligns swirling cylinder as arrow is being pulled out and knocked
         }
-        Matrix_Scale(this->radius * 0.2f, this->unk_160 * 3.0f, this->radius * 0.2f, MTXMODE_APPLY);
-        Matrix_Translate(0.0f, -700.0f, 0.0f, MTXMODE_APPLY);
+        Matrix_Scale(this->radius * 0.2f, this->unk_160 * 3.0f, this->radius * 0.2f, MTXMODE_APPLY); // scales up the swirling cylinder to be the correct size. It's tiny without it
+        Matrix_Translate(0.0f, -700.0f, 0.0f, MTXMODE_APPLY); // moves the swirling cylinder closer to the camera, making it take up more of the screen from camera's PoV.
+        
+        // without this monstrocity, the cool cylinder thing that we just put all our work into renders like way off in the distance.
         gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_arrow_ice.c", 660),
-                  G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+                G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+        
+        // draws the actual cylinder? without it, it's not there :shrug:
         gSPDisplayList(POLY_XLU_DISP++, sMaterialDL);
+
+        // causes the rotation i it seems
         gSPDisplayList(POLY_XLU_DISP++,
-                       Gfx_TwoTexScroll(globalCtx->state.gfxCtx, 0, 511 - (stateFrames * 5) % 512, 0, 128, 32, 1,
+                    Gfx_TwoTexScroll(globalCtx->state.gfxCtx, 0, 511 - (stateFrames * 5) % 512, 0, 128, 32, 1,
                                         511 - (stateFrames * 10) % 512, 511 - (stateFrames * 10) % 512, 4, 16));
+        
+        // removing this gets rid of the cylinder completely as well
         gSPDisplayList(POLY_XLU_DISP++, sModelDL);
 
         CLOSE_DISPS(globalCtx->state.gfxCtx, "../z_arrow_ice.c", 676);
