@@ -1,3 +1,14 @@
+# binaries
+mupen64plus.app/
+
+# Roms
+OG_ROM/
+zelda_ocarina_mq_dbg.elf
+zelda_ocarina_mq_dbg.z64
+
+# idk
+symbolCache.db
+
 # Cache files
 __pycache__/
 .pyc
