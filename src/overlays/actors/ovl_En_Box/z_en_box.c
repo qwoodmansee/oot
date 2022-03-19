@@ -1,6 +1,8 @@
 #include "z_en_box.h"
 #include "objects/object_box/object_box.h"
 
+// TREASURE CHESTS ARE IN THIS FILE
+
 #define FLAGS 0
 
 // movement flags
@@ -117,13 +119,17 @@ void EnBox_Init(Actor* thisx, GlobalContext* globalCtx2) {
 
     if (globalCtx) {} // helps the compiler store globalCtx2 into s1
 
+    // if chest is open
     if (Flags_GetTreasure(globalCtx, this->dyna.actor.params & 0x1F)) {
         this->alpha = 255;
         this->iceSmokeTimer = 100;
         EnBox_SetupAction(this, EnBox_Open);
         this->movementFlags |= ENBOX_MOVE_STICK_TO_GROUND;
         animFrameStart = endFrame;
-    } else if ((this->type == ENBOX_TYPE_SWITCH_FLAG_FALL_BIG || this->type == ENBOX_TYPE_SWITCH_FLAG_FALL_SMALL) &&
+    } 
+    
+    // switch activated FALLING box that hasnt fallen yet
+    else if ((this->type == ENBOX_TYPE_SWITCH_FLAG_FALL_BIG || this->type == ENBOX_TYPE_SWITCH_FLAG_FALL_SMALL) &&
                !Flags_GetSwitch(globalCtx, this->switchFlag)) {
         func_8003EBF8(globalCtx, &globalCtx->colCtx.dyna, this->dyna.bgId);
         if (Rand_ZeroOne() < 0.5f) {
@@ -134,7 +140,10 @@ void EnBox_Init(Actor* thisx, GlobalContext* globalCtx2) {
         this->alpha = 0;
         this->movementFlags |= ENBOX_MOVE_IMMOBILE;
         this->dyna.actor.flags |= ACTOR_FLAG_4;
-    } else if ((this->type == ENBOX_TYPE_ROOM_CLEAR_BIG || this->type == ENBOX_TYPE_ROOM_CLEAR_SMALL) &&
+    } 
+    
+    // room clear activated box that hasnt been cleared yet
+    else if ((this->type == ENBOX_TYPE_ROOM_CLEAR_BIG || this->type == ENBOX_TYPE_ROOM_CLEAR_SMALL) &&
                !Flags_GetClear(globalCtx, this->dyna.actor.room)) {
         EnBox_SetupAction(this, EnBox_AppearOnRoomClear);
         func_8003EBF8(globalCtx, &globalCtx->colCtx.dyna, this->dyna.bgId);
@@ -142,7 +151,10 @@ void EnBox_Init(Actor* thisx, GlobalContext* globalCtx2) {
         this->dyna.actor.world.pos.y = this->dyna.actor.home.pos.y - 50.0f;
         this->alpha = 0;
         this->dyna.actor.flags |= ACTOR_FLAG_4;
-    } else if (this->type == ENBOX_TYPE_9 || this->type == ENBOX_TYPE_10) {
+    } 
+    
+    // no idea - these didn't get drawn when i hardcoded this to true. see notes on consts
+    else if (this->type == ENBOX_TYPE_9 || this->type == ENBOX_TYPE_10) {
         EnBox_SetupAction(this, func_809C9700);
         this->dyna.actor.flags |= ACTOR_FLAG_25;
         func_8003EBF8(globalCtx, &globalCtx->colCtx.dyna, this->dyna.bgId);
@@ -150,14 +162,20 @@ void EnBox_Init(Actor* thisx, GlobalContext* globalCtx2) {
         this->dyna.actor.world.pos.y = this->dyna.actor.home.pos.y - 50.0f;
         this->alpha = 0;
         this->dyna.actor.flags |= ACTOR_FLAG_4;
-    } else if (this->type == ENBOX_TYPE_SWITCH_FLAG_BIG && !Flags_GetSwitch(globalCtx, this->switchFlag)) {
+    } 
+    
+    // switch activated chest that hasnt been spawned yet
+    else if (this->type == ENBOX_TYPE_SWITCH_FLAG_BIG && !Flags_GetSwitch(globalCtx, this->switchFlag)) {
         EnBox_SetupAction(this, EnBox_AppearOnSwitchFlag);
         func_8003EBF8(globalCtx, &globalCtx->colCtx.dyna, this->dyna.bgId);
         this->movementFlags |= ENBOX_MOVE_IMMOBILE;
         this->dyna.actor.world.pos.y = this->dyna.actor.home.pos.y - 50.0f;
         this->alpha = 0;
         this->dyna.actor.flags |= ACTOR_FLAG_4;
-    } else {
+    } 
+    
+    // standard chests that havent been opened
+    else {
         if (this->type == ENBOX_TYPE_4 || this->type == ENBOX_TYPE_6) {
             this->dyna.actor.flags |= ACTOR_FLAG_7;
         }
@@ -395,7 +413,8 @@ void EnBox_WaitOpen(EnBox* this, GlobalContext* globalCtx) {
 
     this->alpha = 255;
     this->movementFlags |= ENBOX_MOVE_IMMOBILE;
-    if (this->unk_1F4 != 0) { // unk_1F4 is modified by player code
+    if (this->unk_1F4 != 0) { // unk_1F4 is modified by player code -  seems like a frame counter
+        // this is most of the code for opening a chest normally. values from func_8002F554 must be set for it to work though.
         linkAge = gSaveContext.linkAge;
         anim = sAnimations[(this->unk_1F4 < 0 ? 2 : 0) + linkAge];
         frameCount = Animation_GetLastFrame(anim);
@@ -419,12 +438,26 @@ void EnBox_WaitOpen(EnBox* this, GlobalContext* globalCtx) {
         osSyncPrintf("Actor_Environment_Tbox_On() %d\n", this->dyna.actor.params & 0x1F);
         Flags_SetTreasure(globalCtx, this->dyna.actor.params & 0x1F);
     } else {
+        // without this you cant open a normal chest,
         player = GET_PLAYER(globalCtx);
         func_8002DBD0(&this->dyna.actor, &sp4C, &player->actor.world.pos);
+        // check distance and angle from sp4c (i dont know what that is) to the chest (I think this also happens in func_8002F554)
         if (sp4C.z > -50.0f && sp4C.z < 0.0f && fabsf(sp4C.y) < 10.0f && fabsf(sp4C.x) < 20.0f &&
             Player_IsFacingActor(&this->dyna.actor, 0x3000, globalCtx)) {
-            func_8002F554(&this->dyna.actor, globalCtx, 0 - (this->dyna.actor.params >> 5 & 0x7F));
+            
+            // if checks pass: set getItem and set players interaction item, item direction, and yaw diff 
+            if (this->type == ENBOX_MAGIC_REQUIRED_BOX && (gSaveContext.magic > 0)) {
+                // have to chest type specific checks in this file
+                func_8002F554(&this->dyna.actor, globalCtx, 0 - (this->dyna.actor.params >> 5 & 0x7F)); 
+            } else if (this->type != ENBOX_MAGIC_REQUIRED_BOX) {
+                // vanilla types always call these checks in this other function
+                func_8002F554(&this->dyna.actor, globalCtx, 0 - (this->dyna.actor.params >> 5 & 0x7F)); 
+            }
         }
+
+        // if the get treasure flag for this chest is already true
+        // NOT the normal way a chest is normally opened.
+        // I'm thinking chest minigame or something, not sure.
         if (Flags_GetTreasure(globalCtx, this->dyna.actor.params & 0x1F)) {
             EnBox_SetupAction(this, EnBox_Open);
         }
@@ -548,7 +581,9 @@ void EnBox_PostLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Ve
     if (limbIndex == 1) {
         gSPMatrix((*gfx)++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_en_box.c", 1492),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-        if (this->type != ENBOX_TYPE_DECORATED_BIG) {
+        if (this->type == ENBOX_MAGIC_REQUIRED_BOX) {
+            gSPDisplayList((*gfx)++, gTreasureChestMagicRequiredChestFrontDL);
+        } else if (this->type != ENBOX_TYPE_DECORATED_BIG) {
             gSPDisplayList((*gfx)++, gTreasureChestChestFrontDL);
         } else {
             gSPDisplayList((*gfx)++, gTreasureChestBossKeyChestFrontDL);
@@ -556,7 +591,9 @@ void EnBox_PostLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Ve
     } else if (limbIndex == 3) {
         gSPMatrix((*gfx)++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_en_box.c", 1502),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-        if (this->type != ENBOX_TYPE_DECORATED_BIG) {
+        if (this->type == ENBOX_MAGIC_REQUIRED_BOX) {
+            gSPDisplayList((*gfx)++, gTreasureChestMagicRequiredChestSideAndLidDL);
+        } else if (this->type != ENBOX_TYPE_DECORATED_BIG) {
             gSPDisplayList((*gfx)++, gTreasureChestChestSideAndLidDL);
         } else {
             gSPDisplayList((*gfx)++, gTreasureChestBossKeyChestSideAndTopDL);

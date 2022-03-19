@@ -16,7 +16,7 @@ void TitleSetup_InitImpl(GameState* gameState) {
     Sram_InitDebugSave();
     gSaveContext.dayTime = 0x8000;
     gSaveContext.entranceIndex = 0;
-    while (!(gEntranceTable[gSaveContext.entranceIndex].scene == SCENE_SPOT00 &&
+    while (!(gEntranceTable[gSaveContext.entranceIndex].scene == SCENE_TESTROOM &&
              gEntranceTable[gSaveContext.entranceIndex].spawn == 0)) {
         gSaveContext.entranceIndex++;
     }

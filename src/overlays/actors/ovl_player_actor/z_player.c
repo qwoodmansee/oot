@@ -5973,6 +5973,8 @@ s32 func_8083E5A8(Player* this, GlobalContext* globalCtx) {
             }
         } else if (CHECK_BTN_ALL(sControlInput->press.button, BTN_A) && !(this->stateFlags1 & PLAYER_STATE1_11) &&
                    !(this->stateFlags2 & PLAYER_STATE2_10)) {
+            
+            // open a chest that you are in front of
             if (this->getItemId != GI_NONE) {
                 GetItemEntry* giEntry = &sGetItemTable[-this->getItemId - 1];
                 EnBox* chest = (EnBox*)interactedActor;
