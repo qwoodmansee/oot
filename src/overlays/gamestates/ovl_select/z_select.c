@@ -43,7 +43,7 @@ void Select_LoadGame(SelectContext* this, s32 entranceIndex) {
 // "Translation" (Actual name)
 static SceneSelectEntry sScenes[] = {
     // "1: SPOT00" (Hyrule Field)
-    { " 1:SPOT00", Select_LoadGame, 0x00CD },
+    { " 1:Hyrule Field", Select_LoadGame, 0x00CD },
     // "2: SPOT01" (Kakariko Village)
     { " 2:SPOT01", Select_LoadGame, 0x00DB },
     // "3: SPOT02" (Graveyard)
@@ -59,7 +59,7 @@ static SceneSelectEntry sScenes[] = {
     // "8: SPOT07" (Zora's Domain)
     { " 8:SPOT07", Select_LoadGame, 0x0108 },
     // "9: SPOT08" (Zora's Fountain)
-    { " 9:SPOT08", Select_LoadGame, 0x010E },
+    { " 9:ZORAS FOUNTAIN", Select_LoadGame, 0x010E },
     // "10: SPOT09" (Gerudo Valley)
     { "10:SPOT09", Select_LoadGame, 0x0117 },
     // "11: SPOT10" (Lost Woods)
