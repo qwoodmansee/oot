@@ -26,7 +26,8 @@ typedef enum {
     /*  8 */ ENBOX_TYPE_SWITCH_FLAG_FALL_SMALL, // falling, appear on switch flag set
     /*  9 */ ENBOX_TYPE_9,                      // big, has something more to do with player and message context?
     /* 10 */ ENBOX_TYPE_10,                     // like 9
-    /* 11 */ ENBOX_TYPE_SWITCH_FLAG_BIG         // big, appear on switch flag set
+    /* 11 */ ENBOX_TYPE_SWITCH_FLAG_BIG,         // big, appear on switch flag set
+    /* 12 */ ENBOX_MAGIC_REQUIRED_BOX           // big, must have magic to open
 } EnBoxType;
 
 typedef struct EnBox {

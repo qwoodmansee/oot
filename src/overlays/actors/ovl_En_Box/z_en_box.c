@@ -441,13 +441,18 @@ void EnBox_WaitOpen(EnBox* this, GlobalContext* globalCtx) {
         // without this you cant open a normal chest,
         player = GET_PLAYER(globalCtx);
         func_8002DBD0(&this->dyna.actor, &sp4C, &player->actor.world.pos);
-
         // check distance and angle from sp4c (i dont know what that is) to the chest (I think this also happens in func_8002F554)
         if (sp4C.z > -50.0f && sp4C.z < 0.0f && fabsf(sp4C.y) < 10.0f && fabsf(sp4C.x) < 20.0f &&
             Player_IsFacingActor(&this->dyna.actor, 0x3000, globalCtx)) {
             
             // if checks pass: set getItem and set players interaction item, item direction, and yaw diff 
-            func_8002F554(&this->dyna.actor, globalCtx, 0 - (this->dyna.actor.params >> 5 & 0x7F));
+            if (this->type == ENBOX_MAGIC_REQUIRED_BOX && (gSaveContext.magic > 0)) {
+                // have to chest type specific checks in this file
+                func_8002F554(&this->dyna.actor, globalCtx, 0 - (this->dyna.actor.params >> 5 & 0x7F)); 
+            } else if (this->type != ENBOX_MAGIC_REQUIRED_BOX) {
+                // vanilla types always call these checks in this other function
+                func_8002F554(&this->dyna.actor, globalCtx, 0 - (this->dyna.actor.params >> 5 & 0x7F)); 
+            }
         }
 
         // if the get treasure flag for this chest is already true
@@ -576,7 +581,9 @@ void EnBox_PostLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Ve
     if (limbIndex == 1) {
         gSPMatrix((*gfx)++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_en_box.c", 1492),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-        if (this->type != ENBOX_TYPE_DECORATED_BIG) {
+        if (this->type == ENBOX_MAGIC_REQUIRED_BOX) {
+            gSPDisplayList((*gfx)++, gTreasureChestMagicRequiredChestFrontDL);
+        } else if (this->type != ENBOX_TYPE_DECORATED_BIG) {
             gSPDisplayList((*gfx)++, gTreasureChestChestFrontDL);
         } else {
             gSPDisplayList((*gfx)++, gTreasureChestBossKeyChestFrontDL);
@@ -584,7 +591,9 @@ void EnBox_PostLimbDraw(GlobalContext* globalCtx, s32 limbIndex, Gfx** dList, Ve
     } else if (limbIndex == 3) {
         gSPMatrix((*gfx)++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_en_box.c", 1502),
                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-        if (this->type != ENBOX_TYPE_DECORATED_BIG) {
+        if (this->type == ENBOX_MAGIC_REQUIRED_BOX) {
+            gSPDisplayList((*gfx)++, gTreasureChestMagicRequiredChestSideAndLidDL);
+        } else if (this->type != ENBOX_TYPE_DECORATED_BIG) {
             gSPDisplayList((*gfx)++, gTreasureChestChestSideAndLidDL);
         } else {
             gSPDisplayList((*gfx)++, gTreasureChestBossKeyChestSideAndTopDL);
