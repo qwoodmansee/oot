@@ -3808,15 +3808,20 @@ s32 func_808382DC(Player* this, GlobalContext* globalCtx) {
 void func_80838940(Player* this, LinkAnimationHeader* anim, f32 arg2, GlobalContext* globalCtx, u16 sfxId) {
     func_80835C58(globalCtx, this, func_8084411C, 1);
 
+    // play animation if it exists
     if (anim != NULL) {
         func_808322D0(globalCtx, this, anim);
     }
 
+    // Effectively jump is here.
+    // seems like most of the height comes from arg2.
     this->actor.velocity.y = arg2 * D_808535E8;
     this->hoverBootsTimer = 0;
     this->actor.bgCheckFlags &= ~BGCHECKFLAG_GROUND;
 
     func_80832854(this);
+
+    // play sound effect
     func_80832698(this, sfxId);
 
     this->stateFlags1 |= PLAYER_STATE1_18;
@@ -4470,7 +4475,8 @@ void func_8083A434(GlobalContext* globalCtx, Player* this) {
     }
 }
 
-s32 func_8083A4A8(Player* this, GlobalContext* globalCtx) {
+// involved in autojump
+s32 AUTOJUMP_OF_SOME_KIND(Player* this, GlobalContext* globalCtx) {
     s16 yawDiff;
     LinkAnimationHeader* anim;
     f32 temp;
@@ -4483,12 +4489,15 @@ s32 func_8083A4A8(Player* this, GlobalContext* globalCtx) {
         anim = &gPlayerAnim_002FE0;
     }
 
-    if (this->linearVelocity > (IREG(66) / 100.0f)) {
+    // determines jump height.
+    if (this->linearVelocity > (IREG(66) / 100.0f)) { // seems like normal off ledge jumps, but other jumps also still work with just this
         temp = IREG(67) / 100.0f;
     } else {
+        // a lot of jumps still work with this, but rolling off jumps dont really (he "jumps") with no height
         temp = (IREG(68) / 100.0f) + ((IREG(69) * this->linearVelocity) / 1000.0f);
     }
 
+    // jump??
     func_80838940(this, anim, temp, globalCtx, NA_SE_VO_LI_AUTO_JUMP);
     this->unk_850 = 1;
 
@@ -4583,6 +4592,7 @@ void func_8083A9B8(Player* this, LinkAnimationHeader* anim, GlobalContext* globa
 
 static Vec3f D_8085451C = { 0.0f, 0.0f, 100.0f };
 
+// jump off ledge code in here somewhere
 void func_8083AA10(Player* this, GlobalContext* globalCtx) {
     s32 sp5C;
     CollisionPoly* sp58;
@@ -4642,7 +4652,8 @@ void func_8083AA10(Player* this, GlobalContext* globalCtx) {
                         }
                     }
 
-                    func_8083A4A8(this, globalCtx);
+                    // jump??
+                    AUTOJUMP_OF_SOME_KIND(this, globalCtx);
                     return;
                 }
 
@@ -5054,7 +5065,7 @@ void func_8083BCD0(Player* this, GlobalContext* globalCtx, s32 arg2) {
     this->unk_84F = arg2;
 
     this->currentYaw = this->actor.shape.rot.y + (arg2 << 0xE);
-    this->linearVelocity = !(arg2 & 1) ? 6.0f : 8.5f;
+    this->linearVelocity = !(arg2 & 1) ? 6.0f : 8.5f; // side hop speed i think
 
     this->stateFlags2 |= PLAYER_STATE2_19;
 
@@ -5633,9 +5644,11 @@ void func_8083D6EC(GlobalContext* globalCtx, Player* this) {
     this->actor.minVelocityY = -20.0f;
     this->actor.gravity = REG(68) / 100.0f;
 
+    // couldnt get in here, not sure what it's for. setting true caused link to sink and void
     if (func_8083816C(D_808535E4)) {
         temp1 = fabsf(this->linearVelocity) * 20.0f;
         temp3 = 0.0f;
+
 
         if (D_808535E4 == 4) {
             if (this->unk_6C4 > 1300.0f) {
@@ -5643,21 +5656,45 @@ void func_8083D6EC(GlobalContext* globalCtx, Player* this) {
             } else {
                 temp2 = 1300.0f;
             }
-            if (this->currentBoots == PLAYER_BOOTS_HOVER) {
+            // vanilla
+            // if (this->currentBoots == PLAYER_BOOTS_HOVER) {
+            //     temp1 += temp1;
+            // } else if (this->currentBoots == PLAYER_BOOTS_IRON) {
+            //     temp1 *= 0.3f;
+            // }
+
+            if (false) {
                 temp1 += temp1;
             } else if (this->currentBoots == PLAYER_BOOTS_IRON) {
                 temp1 *= 0.3f;
             }
-        } else {
+        } else { // not sure what this is for, but causes link to fall slowly into a void
             temp2 = 20000.0f;
-            if (this->currentBoots != PLAYER_BOOTS_HOVER) {
+            // vanilla
+            // if (this->currentBoots != PLAYER_BOOTS_HOVER) {
+            //     temp1 += temp1;
+            // } else if ((D_808535E4 == 7) || (this->currentBoots == PLAYER_BOOTS_IRON)) {
+            //     temp1 = 0;
+            // }
+
+            if (true) {
                 temp1 += temp1;
             } else if ((D_808535E4 == 7) || (this->currentBoots == PLAYER_BOOTS_IRON)) {
                 temp1 = 0;
             }
+
         }
 
-        if (this->currentBoots != PLAYER_BOOTS_HOVER) {
+        // vanilla
+        // if (this->currentBoots != PLAYER_BOOTS_HOVER) {
+        //     temp3 = (temp2 - this->unk_6C4) * 0.02f;
+        //     temp3 = CLAMP(temp3, 0.0f, 300.0f);
+        //     if (this->currentBoots == PLAYER_BOOTS_IRON) {
+        //         temp3 += temp3;
+        //     }
+        // }
+
+        if (true) {
             temp3 = (temp2 - this->unk_6C4) * 0.02f;
             temp3 = CLAMP(temp3, 0.0f, 300.0f);
             if (this->currentBoots == PLAYER_BOOTS_IRON) {
@@ -5669,7 +5706,7 @@ void func_8083D6EC(GlobalContext* globalCtx, Player* this) {
         this->unk_6C4 = CLAMP(this->unk_6C4, 0.0f, temp2);
 
         this->actor.gravity -= this->unk_6C4 * 0.004f;
-    } else {
+    } else { // this seems like the "normal behavior" while link is running around
         this->unk_6C4 = 0.0f;
     }
 
@@ -6593,7 +6630,18 @@ void func_8084029C(Player* this, f32 arg1) {
 
     if (1) {}
 
-    if ((this->currentBoots == PLAYER_BOOTS_HOVER) && !(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
+    // vanilla
+    // if ((this->currentBoots == PLAYER_BOOTS_HOVER) && !(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
+    //     (this->hoverBootsTimer != 0)) {
+    //     func_8002F8F0(&this->actor, NA_SE_PL_HOBBERBOOTS_LV - SFX_FLAG);
+    // } else if (func_8084021C(this->unk_868, arg1, 29.0f, 10.0f) || func_8084021C(this->unk_868, arg1, 29.0f, 24.0f)) {
+    //     func_808327F8(this, this->linearVelocity);
+    //     if (this->linearVelocity > 4.0f) {
+    //         this->stateFlags2 |= PLAYER_STATE2_3;
+    //     }
+    // }
+
+    if ((false) && !(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
         (this->hoverBootsTimer != 0)) {
         func_8002F8F0(&this->actor, NA_SE_PL_HOBBERBOOTS_LV - SFX_FLAG);
     } else if (func_8084021C(this->unk_868, arg1, 29.0f, 10.0f) || func_8084021C(this->unk_868, arg1, 29.0f, 24.0f)) {
@@ -9414,19 +9462,31 @@ void func_808473D4(GlobalContext* globalCtx, Player* this) {
 s32 func_80847A78(Player* this) {
     s32 cond;
 
-    if ((this->currentBoots == PLAYER_BOOTS_HOVER) && (this->hoverBootsTimer != 0)) {
+    // vanilla
+    // if ((this->currentBoots == PLAYER_BOOTS_HOVER) && (this->hoverBootsTimer != 0)) {
+    //     this->hoverBootsTimer--;
+    // } else {
+    //     this->hoverBootsTimer = 0;
+    // }
+
+    if ((false) && (this->hoverBootsTimer != 0)) {
         this->hoverBootsTimer--;
     } else {
         this->hoverBootsTimer = 0;
     }
 
-    cond = (this->currentBoots == PLAYER_BOOTS_HOVER) &&
+    // vanilla
+    // cond = (this->currentBoots == PLAYER_BOOTS_HOVER) &&
+    //        ((this->actor.yDistToWater >= 0.0f) || (func_80838144(D_808535E4) >= 0) || func_8083816C(D_808535E4));
+
+    cond = (false) &&
            ((this->actor.yDistToWater >= 0.0f) || (func_80838144(D_808535E4) >= 0) || func_8083816C(D_808535E4));
 
     if (cond && (this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) && (this->hoverBootsTimer != 0)) {
         this->actor.bgCheckFlags &= ~BGCHECKFLAG_GROUND;
     }
 
+    // TRIGGER HOVER
     if (this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) {
         if (!cond) {
             this->hoverBootsTimer = 19;
@@ -9453,6 +9513,7 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
 
     D_80853604 = this->unk_A7A;
 
+    // without this else, movement doesnt happen
     if (this->stateFlags2 & PLAYER_STATE2_18) {
         spB0 = 10.0f;
         spAC = 15.0f;
@@ -9463,7 +9524,10 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
         spA8 = this->ageProperties->unk_00;
     }
 
+    //spA4 deals with x/y collision.
     if (this->stateFlags1 & (PLAYER_STATE1_29 | PLAYER_STATE1_31)) {
+        
+        // special  cases of collision that idk how to hit.
         if (this->stateFlags1 & PLAYER_STATE1_31) {
             this->actor.bgCheckFlags &= ~BGCHECKFLAG_GROUND;
             spA4 = UPDBGCHECKINFO_FLAG_3 | UPDBGCHECKINFO_FLAG_4 | UPDBGCHECKINFO_FLAG_5;
@@ -9478,35 +9542,45 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
                    UPDBGCHECKINFO_FLAG_4 | UPDBGCHECKINFO_FLAG_5;
         }
     } else {
+        // average every day x/y collision
         spA4 = UPDBGCHECKINFO_FLAG_0 | UPDBGCHECKINFO_FLAG_1 | UPDBGCHECKINFO_FLAG_2 | UPDBGCHECKINFO_FLAG_3 |
                UPDBGCHECKINFO_FLAG_4 | UPDBGCHECKINFO_FLAG_5;
     }
 
+    // nothing interesting happened removing this
     if (this->stateFlags3 & PLAYER_STATE3_0) {
         spA4 &= ~(UPDBGCHECKINFO_FLAG_1 | UPDBGCHECKINFO_FLAG_2);
     }
 
+    // nothing interesting happened removing this
     if (spA4 & UPDBGCHECKINFO_FLAG_2) {
         this->stateFlags3 |= PLAYER_STATE3_4;
     }
 
+    // link endlessly falls without this.
     Math_Vec3f_Copy(&spB4, &this->actor.world.pos);
+
+    // removing this did nothing interesting
     Actor_UpdateBgCheckInfo(globalCtx, &this->actor, spAC, spB0, spA8, spA4);
 
+    // ceiling collision im guessing
     if (this->actor.bgCheckFlags & BGCHECKFLAG_CEILING) {
         this->actor.velocity.y = 0.0f;
     }
 
+    
     D_80853600 = this->actor.world.pos.y - this->actor.floorHeight;
     D_808535F4 = 0;
 
     floorPoly = this->actor.floorPoly;
 
+    // im sure this is doing a lot but removing didn't do anything noticable
     if (floorPoly != NULL) {
         this->unk_A7A = func_80041EA4(&globalCtx->colCtx, floorPoly, this->actor.floorBgId);
         this->unk_A82 = this->unk_89E;
 
         if (this->actor.bgCheckFlags & BGCHECKFLAG_WATER) {
+            // removing this did nothing cool, even in water
             if (this->actor.yDistToWater < 20.0f) {
                 this->unk_89E = 4;
             } else {
@@ -9531,6 +9605,7 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
             }
         }
 
+        // only does something if floor is conveyor i guess?
         D_808535F4 = SurfaceType_GetConveyorSpeed(&globalCtx->colCtx, floorPoly, this->actor.floorBgId);
         if (D_808535F4 != 0) {
             D_808535F8 = SurfaceType_IsConveyor(&globalCtx->colCtx, floorPoly, this->actor.floorBgId);
@@ -9545,10 +9620,13 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
         }
     }
 
+    // check for loading zones and load new zone if necessary
     func_80839034(globalCtx, this, floorPoly, this->actor.floorBgId);
 
+    // removing didn't do anything cool
     this->actor.bgCheckFlags &= ~BGCHECKFLAG_PLAYER_WALL_INTERACT;
 
+    // if link is hitting a wall
     if (this->actor.bgCheckFlags & BGCHECKFLAG_WALL) {
         CollisionPoly* spA0;
         s32 sp9C;
@@ -9556,11 +9634,18 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
         s32 pad;
 
         D_80854798.y = 18.0f;
+
+        // used for calculations to see how link can vertically interact with the wall
         D_80854798.z = this->ageProperties->unk_38 + 10.0f;
 
+        // check if against wall and can interact with it
         if (!(this->stateFlags2 & PLAYER_STATE2_18) &&
             func_80839768(globalCtx, this, &D_80854798, &spA0, &sp9C, &D_80858AA8)) {
+
+            // flag that we should interact with the wall
             this->actor.bgCheckFlags |= BGCHECKFLAG_PLAYER_WALL_INTERACT;
+
+            // record wall we are interacting with
             if (this->actor.wallPoly != spA0) {
                 this->actor.wallPoly = spA0;
                 this->actor.wallBgId = sp9C;
@@ -9568,16 +9653,22 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
             }
         }
 
+        // removing did nothing interesting
         sp9A = this->actor.shape.rot.y - (s16)(this->actor.wallYaw + 0x8000);
 
+        // removing did nothing interesting
         D_808535F0 = func_80041DB8(&globalCtx->colCtx, this->actor.wallPoly, this->actor.wallBgId);
 
+        // removing did nothing interesting
         D_80853608 = ABS(sp9A);
 
+        // removing did nothing interesting
         sp9A = this->currentYaw - (s16)(this->actor.wallYaw + 0x8000);
 
+        // removing did nothing interesting
         D_8085360C = ABS(sp9A);
 
+        // removing did nothing interesting
         spB0 = D_8085360C * 0.00008f;
         if (!(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) || spB0 >= 1.0f) {
             this->unk_880 = R_RUN_SPEED_LIMIT / 100.0f;
@@ -9589,6 +9680,7 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
             }
         }
 
+        // when colliding with wall, set a bunch of data based on the wall
         if ((this->actor.bgCheckFlags & BGCHECKFLAG_PLAYER_WALL_INTERACT) && (D_80853608 < 0x3000)) {
             CollisionPoly* wallPoly = this->actor.wallPoly;
 
@@ -9647,12 +9739,14 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
                 }
             }
         }
-    } else {
+    } else { // link is not hitting a wall
         this->unk_880 = R_RUN_SPEED_LIMIT / 100.0f;
         this->unk_88D = 0;
         this->wallHeight = 0.0f;
     }
 
+    // set more data to do with wall interactions i think
+    // removing this removed the ability to climb and bunny hop on walls
     if (spC7 == this->unk_88C) {
         if ((this->linearVelocity != 0.0f) && (this->unk_88D < 100)) {
             this->unk_88D++;
@@ -9662,6 +9756,7 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
         this->unk_88D = 0;
     }
 
+    // removing this AND the else didn't do anything cool
     if (this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) {
         D_808535E4 = func_80041D4C(&globalCtx->colCtx, floorPoly, this->actor.floorBgId);
 
@@ -9702,6 +9797,7 @@ void func_80847BA0(GlobalContext* globalCtx, Player* this) {
         func_80847A78(this);
     }
 
+    // removing this AND the else didn't do anything cool
     if (this->unk_A7B == D_808535E4) {
         this->unk_A79++;
     } else {
@@ -10071,37 +10167,73 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         }
 
         if (!(this->skelAnime.moveFlags & 0x80)) {
+            // if (((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) && (D_808535E4 == 5) &&
+            //      (this->currentBoots != PLAYER_BOOTS_IRON)) ||
+            //     ((this->currentBoots == PLAYER_BOOTS_HOVER) &&
+            //      !(this->stateFlags1 & (PLAYER_STATE1_27 | PLAYER_STATE1_29)))) {
+            //     f32 sp70 = this->linearVelocity;
+            //     s16 sp6E = this->currentYaw;
+            //     s16 yawDiff = this->actor.world.rot.y - sp6E;
+            //     s32 pad;
+
+            //     if ((ABS(yawDiff) > 0x6000) && (this->actor.speedXZ != 0.0f)) {
+            //         sp70 = 0.0f;
+            //         sp6E += 0x8000;
+            //     }
+
+            //     if (Math_StepToF(&this->actor.speedXZ, sp70, 0.35f) && (sp70 == 0.0f)) {
+            //         this->actor.world.rot.y = this->currentYaw;
+            //     }
+
+            //     if (this->linearVelocity != 0.0f) {
+            //         s32 phi_v0;
+
+            //         phi_v0 = (fabsf(this->linearVelocity) * 700.0f) - (fabsf(this->actor.speedXZ) * 100.0f);
+            //         phi_v0 = CLAMP(phi_v0, 0, 1350);
+
+            //         Math_ScaledStepToS(&this->actor.world.rot.y, sp6E, phi_v0);
+            //     }
+
+            //     if ((this->linearVelocity == 0.0f) && (this->actor.speedXZ != 0.0f)) {
+            //         func_800F4138(&this->actor.projectedPos, 0xD0, this->actor.speedXZ);
+            //     }
+            // } else {
+            //     this->actor.speedXZ = this->linearVelocity;
+            //     this->actor.world.rot.y = this->currentYaw;
+            // }
+
             if (((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) && (D_808535E4 == 5) &&
                  (this->currentBoots != PLAYER_BOOTS_IRON)) ||
-                ((this->currentBoots == PLAYER_BOOTS_HOVER) &&
+                ((false) &&
                  !(this->stateFlags1 & (PLAYER_STATE1_27 | PLAYER_STATE1_29)))) {
-                f32 sp70 = this->linearVelocity;
-                s16 sp6E = this->currentYaw;
-                s16 yawDiff = this->actor.world.rot.y - sp6E;
-                s32 pad;
+                     // can put this back but dont need to worry about it for now
+                // f32 sp70 = this->linearVelocity;
+                // s16 sp6E = this->currentYaw;
+                // s16 yawDiff = this->actor.world.rot.y - sp6E;
+                // s32 pad;
 
-                if ((ABS(yawDiff) > 0x6000) && (this->actor.speedXZ != 0.0f)) {
-                    sp70 = 0.0f;
-                    sp6E += 0x8000;
-                }
+                // if ((ABS(yawDiff) > 0x6000) && (this->actor.speedXZ != 0.0f)) {
+                //     sp70 = 0.0f;
+                //     sp6E += 0x8000;
+                // }
 
-                if (Math_StepToF(&this->actor.speedXZ, sp70, 0.35f) && (sp70 == 0.0f)) {
-                    this->actor.world.rot.y = this->currentYaw;
-                }
+                // if (Math_StepToF(&this->actor.speedXZ, sp70, 0.35f) && (sp70 == 0.0f)) {
+                //     this->actor.world.rot.y = this->currentYaw;
+                // }
 
-                if (this->linearVelocity != 0.0f) {
-                    s32 phi_v0;
+                // if (this->linearVelocity != 0.0f) {
+                //     s32 phi_v0;
 
-                    phi_v0 = (fabsf(this->linearVelocity) * 700.0f) - (fabsf(this->actor.speedXZ) * 100.0f);
-                    phi_v0 = CLAMP(phi_v0, 0, 1350);
+                //     phi_v0 = (fabsf(this->linearVelocity) * 700.0f) - (fabsf(this->actor.speedXZ) * 100.0f);
+                //     phi_v0 = CLAMP(phi_v0, 0, 1350);
 
-                    Math_ScaledStepToS(&this->actor.world.rot.y, sp6E, phi_v0);
-                }
+                //     Math_ScaledStepToS(&this->actor.world.rot.y, sp6E, phi_v0);
+                // }
 
-                if ((this->linearVelocity == 0.0f) && (this->actor.speedXZ != 0.0f)) {
-                    func_800F4138(&this->actor.projectedPos, 0xD0, this->actor.speedXZ);
-                }
-            } else {
+                // if ((this->linearVelocity == 0.0f) && (this->actor.speedXZ != 0.0f)) {
+                //     func_800F4138(&this->actor.projectedPos, 0xD0, this->actor.speedXZ);
+                // }
+            } else { // Normal walking movement
                 this->actor.speedXZ = this->linearVelocity;
                 this->actor.world.rot.y = this->currentYaw;
             }
@@ -10115,7 +10247,10 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
                 this->actor.velocity.z += this->windSpeed * Math_CosS(this->windDirection);
             }
 
+            // moves the player
             func_8002D7EC(&this->actor);
+
+            // fall through floor without this.
             func_80847BA0(globalCtx, this);
         } else {
             D_808535E4 = 0;
@@ -10147,6 +10282,7 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
             this->windSpeed = 0.0f;
         }
 
+        // removing this did nothing interesting
         if ((D_808535F4 != 0) && (this->currentBoots != PLAYER_BOOTS_IRON)) {
             f32 sp48;
 
@@ -10173,11 +10309,15 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         if (!Player_InBlockingCsMode(globalCtx, this) && !(this->stateFlags2 & PLAYER_STATE2_18)) {
             func_8083D53C(globalCtx, this);
 
+            // if the players health reaches zero
             if ((this->actor.category == ACTORCAT_PLAYER) && (gSaveContext.health == 0)) {
+                // not sure what the triggers the true here
                 if (this->stateFlags1 & (PLAYER_STATE1_13 | PLAYER_STATE1_14 | PLAYER_STATE1_21)) {
+                    // set some state that happens before death? not sure. These two calls dont make you die
                     func_80832440(globalCtx, this);
                     func_80837B9C(this, globalCtx);
                 } else if ((this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) || (this->stateFlags1 & PLAYER_STATE1_27)) {
+                    // trigger actual death
                     func_80836448(globalCtx, this,
                                   func_808332B8(this)       ? &gPlayerAnim_003310
                                   : (this->shockTimer != 0) ? &gPlayerAnim_002F08
@@ -10186,55 +10326,73 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
             } else {
                 if ((this->actor.parent == NULL) &&
                     ((globalCtx->sceneLoadFlag == 0x14) || (this->unk_A87 != 0) || !func_808382DC(this, globalCtx))) {
+                    // not sure what this does
                     func_8083AA10(this, globalCtx);
                 } else {
-                    this->fallStartHeight = this->actor.world.pos.y;
+                    // this has the side effect of making link jump off of things
+                    // this seems to be the standard "jump off of things" trigger,
+                    // as without it, link just rolls off stuff
+                    this->fallStartHeight = this->actor.world.pos.y; // weirdly, changing the value of this doesnt actually do anything, it just has to be set?
                 }
+
+                // removing this did nothing cool
                 func_80848EF8(this);
             }
         }
 
+        // if in cutscene + some other crap
         if ((globalCtx->csCtx.state != CS_STATE_IDLE) && (this->csMode != 6) &&
             !(this->stateFlags1 & PLAYER_STATE1_23) && !(this->stateFlags2 & PLAYER_STATE2_7) &&
             (this->actor.category == ACTORCAT_PLAYER)) {
             CsCmdActorAction* linkActionCsCmd = globalCtx->csCtx.linkAction;
 
             if ((linkActionCsCmd != NULL) && (D_808547C4[linkActionCsCmd->action] != 0)) {
+                // freezes link, not sure what he's doing
                 func_8002DF54(globalCtx, NULL, 6);
                 func_80832210(this);
             } else if ((this->csMode == 0) && !(this->stateFlags2 & PLAYER_STATE2_10) &&
                        (globalCtx->csCtx.state != CS_STATE_UNSKIPPABLE_INIT)) {
+                // freezes link, not sure what he's doing
                 func_8002DF54(globalCtx, NULL, 0x31);
                 func_80832210(this);
             }
         }
 
+        // other during cutscene stuff
         if (this->csMode != 0) {
             if ((this->csMode != 7) ||
                 !(this->stateFlags1 & (PLAYER_STATE1_13 | PLAYER_STATE1_14 | PLAYER_STATE1_21 | PLAYER_STATE1_26))) {
+                // freezes link
                 this->unk_6AD = 3;
             } else if (func_80852E14 != this->func_674) {
+                // freezes link
                 func_80852944(globalCtx, this, NULL);
             }
         } else {
             this->prevCsMode = 0;
         }
 
+        // apply gravity to link among other things
         func_8083D6EC(globalCtx, this);
 
         if ((this->unk_664 == NULL) && (this->naviTextId == 0)) {
             this->stateFlags2 &= ~(PLAYER_STATE2_1 | PLAYER_STATE2_21);
         }
 
+        // removing these makes Z-Targeting act very strangely, i bet other things would too.
         this->stateFlags1 &= ~(PLAYER_STATE1_1 | PLAYER_STATE1_9 | PLAYER_STATE1_12 | PLAYER_STATE1_22);
         this->stateFlags2 &= ~(PLAYER_STATE2_0 | PLAYER_STATE2_2 | PLAYER_STATE2_3 | PLAYER_STATE2_5 | PLAYER_STATE2_6 |
                                PLAYER_STATE2_8 | PLAYER_STATE2_9 | PLAYER_STATE2_12 | PLAYER_STATE2_14 |
                                PLAYER_STATE2_16 | PLAYER_STATE2_22 | PLAYER_STATE2_26);
         this->stateFlags3 &= ~PLAYER_STATE3_4;
 
+        // removing this did nothing cool
         func_80847298(this);
+
+        // remove this and link is frozen and cant do sidehops or backflips. Can still roll.
         func_8083315C(globalCtx, this);
 
+        // removing these did nothing noticeable
         if (this->stateFlags1 & PLAYER_STATE1_27) {
             D_808535E8 = 0.5f;
         } else {
@@ -10242,20 +10400,30 @@ void Player_UpdateCommon(Player* this, GlobalContext* globalCtx, Input* input) {
         }
 
         D_808535EC = 1.0f / D_808535E8;
+
+        // stops sword swing in some way. pressing B causes endless sword swings unless this is here.
         D_80853614 = D_80853618 = 0;
+
+        // i have no idea why this would do anything important but woo.
         D_80858AA4 = this->currentMask;
 
+
+        // without this link is frozen and sliding forward slightly lol.
         if (!(this->stateFlags3 & PLAYER_STATE3_2)) {
+            // this can be a lot of different functions. My guess is that it's the "start" of a lot of different events like dropping fish or whatever.
             this->func_674(this, globalCtx);
         }
 
+        // a lot goes away if you remove this. Cant draw sword, cant use items, cant z target, all sorts of stuff
         Player_UpdateCamAndSeqModes(globalCtx, this);
 
+        // setting this to always happen didn't do anything noticeable
         if (this->skelAnime.moveFlags & 8) {
             AnimationContext_SetMoveActor(globalCtx, &this->actor, &this->skelAnime,
                                           (this->skelAnime.moveFlags & 4) ? 1.0f : this->ageProperties->unk_08);
         }
 
+        // removing this did nothing
         func_808368EC(this, globalCtx);
 
         if (CHECK_FLAG_ALL(this->actor.flags, ACTOR_FLAG_8)) {
@@ -10448,7 +10616,43 @@ void Player_DrawGameplay(GlobalContext* globalCtx, Player* this, s32 lod, Gfx* c
         gSPDisplayList(POLY_OPA_DISP++, sMaskDlists[this->currentMask - 1]);
     }
 
-    if ((this->currentBoots == PLAYER_BOOTS_HOVER) && !(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
+    // if ((this->currentBoots == PLAYER_BOOTS_HOVER) && !(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
+    //     !(this->stateFlags1 & PLAYER_STATE1_23) && (this->hoverBootsTimer != 0)) {
+    //     s32 sp5C;
+    //     s32 hoverBootsTimer = this->hoverBootsTimer;
+
+    //     if (this->hoverBootsTimer < 19) {
+    //         if (hoverBootsTimer >= 15) {
+    //             D_8085486C = (19 - hoverBootsTimer) * 51.0f;
+    //         } else if (hoverBootsTimer < 19) {
+    //             sp5C = hoverBootsTimer;
+
+    //             if (sp5C > 9) {
+    //                 sp5C = 9;
+    //             }
+
+    //             D_8085486C = (-sp5C * 4) + 36;
+    //             D_8085486C = D_8085486C * D_8085486C;
+    //             D_8085486C = (s32)((Math_CosS(D_8085486C) * 100.0f) + 100.0f) + 55.0f;
+    //             D_8085486C = D_8085486C * (sp5C * (1.0f / 9.0f));
+    //         }
+
+    //         Matrix_SetTranslateRotateYXZ(this->actor.world.pos.x, this->actor.world.pos.y + 2.0f,
+    //                                      this->actor.world.pos.z, &D_80854864);
+    //         Matrix_Scale(4.0f, 4.0f, 4.0f, MTXMODE_APPLY);
+
+    //         gSPMatrix(POLY_XLU_DISP++, Matrix_NewMtx(globalCtx->state.gfxCtx, "../z_player.c", 19317),
+    //                   G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    //         gSPSegment(POLY_XLU_DISP++, 0x08,
+    //                    Gfx_TwoTexScroll(globalCtx->state.gfxCtx, 0, 0, 0, 16, 32, 1, 0,
+    //                                     (globalCtx->gameplayFrames * -15) % 128, 16, 32));
+    //         gDPSetPrimColor(POLY_XLU_DISP++, 0x80, 0x80, 255, 255, 255, D_8085486C);
+    //         gDPSetEnvColor(POLY_XLU_DISP++, 120, 90, 30, 128);
+    //         gSPDisplayList(POLY_XLU_DISP++, gHoverBootsCircleDL);
+    //     }
+    // }
+
+    if ((false) && !(this->actor.bgCheckFlags & BGCHECKFLAG_GROUND) &&
         !(this->stateFlags1 & PLAYER_STATE1_23) && (this->hoverBootsTimer != 0)) {
         s32 sp5C;
         s32 hoverBootsTimer = this->hoverBootsTimer;
