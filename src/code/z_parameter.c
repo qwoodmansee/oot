@@ -2534,8 +2534,9 @@ void Interface_DrawMagicBar(GlobalContext* globalCtx) {
     OPEN_DISPS(globalCtx->state.gfxCtx, "../z_parameter.c", 2650);
 
     if (gSaveContext.magicLevel != 0) {
+        s16 magicBarOffsetMultiplier = gSaveContext.healthCapacity / 0xA0 - 1;
         if (gSaveContext.healthCapacity > 0xA0) {
-            magicBarY = R_MAGIC_BAR_LARGE_Y;
+            magicBarY = R_MAGIC_BAR_LARGE_Y + 10 * magicBarOffsetMultiplier;
         } else {
             magicBarY = R_MAGIC_BAR_SMALL_Y;
         }

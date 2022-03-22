@@ -489,7 +489,7 @@ void HealthMeter_Draw(GlobalContext* globalCtx) {
         offsetX += 10.0f;
 
         // Go down one line after 10 hearts
-        if (heartIndex == 9) {
+        if (heartIndex > 8 && heartIndex % 10 == 9) {
             offsetY += 10.0f;
             offsetX = 0.0f;
         }
