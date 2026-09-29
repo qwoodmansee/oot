@@ -27,8 +27,9 @@ typedef enum CsmState {
 typedef struct CsmActorSpawn {
     /* 0x00 */ s16 actorId;
     /* 0x02 */ s16 params;
-    /* 0x04 */ Vec3f pos;
-    /* 0x10 */ Vec3s rot;
+    /* 0x04 */ Vec3f pos;      // world units, or relative to Link when `relative` is set
+    /* 0x10 */ Vec3s rot;      // binang; yaw is added to Link's yaw when `relative` is set
+    /* 0x16 */ u8 relative;    // 1: pos and yaw are relative to Link (Z forward, X right, Y up)
 } CsmActorSpawn;
 
 typedef struct CsmConfig {

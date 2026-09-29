@@ -18,6 +18,7 @@
 #include "transition.h"
 
 s32 Object_SpawnPersistent(ObjectContext* objectCtx, s16 objectId);
+void Camera_RotateAroundPoint(PosRot* at, Vec3f* pos, Vec3f* dst);
 
 CsmStatus gCsmStatus;
 static u16 sCsmStartWait;
@@ -104,21 +105,33 @@ void Csm_OnPlayInit(struct PlayState* play) {
 
 static void Csm_SpawnActorsAndTrigger(struct PlayState* play) {
     Player* player = GET_PLAYER(play);
+    PosRot playerPosRot;
     s32 i;
 
+    // Same reference the camera's relative mode uses (Camera_Demo1 -> Actor_GetWorld).
+    playerPosRot = Actor_GetWorld(&player->actor);
     PRINTF("[CSM] PLAYER %d %d %d yaw=%d\n", (s32)player->actor.world.pos.x, (s32)player->actor.world.pos.y,
-           (s32)player->actor.world.pos.z, player->actor.shape.rot.y);
+           (s32)player->actor.world.pos.z, playerPosRot.rot.y);
 
     for (i = 0; i < gCsmConfig.actorCount; i++) {
         const CsmActorSpawn* spawn = &gCsmConfig.actors[i];
-        Actor* actor = Actor_Spawn(&play->actorCtx, play, spawn->actorId, spawn->pos.x, spawn->pos.y, spawn->pos.z,
-                                   spawn->rot.x, spawn->rot.y, spawn->rot.z, spawn->params);
+        Vec3f pos = spawn->pos;
+        s16 yaw = spawn->rot.y;
+        Actor* actor;
 
+        if (spawn->relative) {
+            Vec3f rel = spawn->pos;
+
+            Camera_RotateAroundPoint(&playerPosRot, &rel, &pos);
+            yaw += playerPosRot.rot.y;
+        }
+        actor = Actor_Spawn(&play->actorCtx, play, spawn->actorId, pos.x, pos.y, pos.z, spawn->rot.x, yaw,
+                            spawn->rot.z, spawn->params);
         if (actor == NULL) {
             Csm_SetError(CSM_ERR_ACTOR_SPAWN, i);
             return;
         }
-        PRINTF("[CSM] actor %d spawned\n", spawn->actorId);
+        PRINTF("[CSM] actor %d spawned at %d %d %d\n", spawn->actorId, (s32)pos.x, (s32)pos.y, (s32)pos.z);
     }
 
     play->csCtx.script = (void*)gCsmScript;
