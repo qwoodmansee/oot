@@ -21,7 +21,9 @@
 /* 0x3B */ MEDIUM(CARTRIDGE)
 #endif
 /* 0x3C */ GAME_ID("ZL")
-#if OOT_REGION == REGION_US
+#if CUTSCENE_MAKER
+/* 0x3E */ REGION(US) /* cutscene-maker: NTSC timing in emulators */
+#elif OOT_REGION == REGION_US
 /* 0x3E */ REGION(US)
 #elif OOT_REGION == REGION_JP
 /* 0x3E */ REGION(JP)

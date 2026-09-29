@@ -15,6 +15,8 @@ SHELL = /usr/bin/env bash
 
 # If COMPARE is 1, check the output md5sum after building. Set to 0 when modding.
 COMPARE ?= 1
+# If CUTSCENE_MAKER is 1, build the cutscene-maker variant (see the cutscene-maker repo).
+CUTSCENE_MAKER ?= 0
 # If NON_MATCHING is 1, define the NON_MATCHING C flag when building. Set to 1 when modding.
 NON_MATCHING ?= 0
 # If ORIG_COMPILER is 1, compile with QEMU_IRIX and the original compiler.
@@ -196,6 +198,14 @@ endif
 
 PROJECT_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 BUILD_DIR := build/$(VERSION)
+
+ifeq ($(CUTSCENE_MAKER),1)
+  CPP_DEFINES += -DCUTSCENE_MAKER=1
+  COMPARE := 0
+  BUILD_DIR := build/$(VERSION)-csm
+else
+  CPP_DEFINES += -DCUTSCENE_MAKER=0
+endif
 EXPECTED_DIR := expected/$(BUILD_DIR)
 BASEROM_DIR := baseroms/$(VERSION)
 EXTRACTED_DIR := extracted/$(VERSION)

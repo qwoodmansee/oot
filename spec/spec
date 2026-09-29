@@ -633,6 +633,10 @@ beginseg
     include "$(BUILD_DIR)/src/code/game.o"
     include "$(BUILD_DIR)/src/code/gamealloc.o"
     include "$(BUILD_DIR)/src/code/graph.o"
+#if CUTSCENE_MAKER
+    include "$(BUILD_DIR)/src/cutscene_maker/csm_runtime.o"
+    include "$(BUILD_DIR)/src/cutscene_maker/generated/csm_generated.o"
+#endif
     include "$(BUILD_DIR)/src/code/gfxalloc.o"
     include "$(BUILD_DIR)/src/code/listalloc.o"
     include "$(BUILD_DIR)/src/code/main.o"

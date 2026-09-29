@@ -46,6 +46,9 @@
 #include "player.h"
 #include "save.h"
 #include "vis.h"
+#if CUTSCENE_MAKER
+#include "cutscene_maker.h"
+#endif
 
 #pragma increment_block_number "gc-eu:224 gc-eu-mq:224 gc-jp:224 gc-jp-ce:224 gc-jp-mq:224 gc-us:224 gc-us-mq:224" \
                                "ique-cn:224 ntsc-1.0:240 ntsc-1.1:240 ntsc-1.2:240 pal-1.0:240 pal-1.1:240"
@@ -370,7 +373,9 @@ void Play_Init(GameState* thisx) {
         gSaveContext.save.nightFlag = 0;
     }
 
+#if !CUTSCENE_MAKER
     Cutscene_HandleConditionalTriggers(this);
+#endif
 
     if (gSaveContext.gameMode != GAMEMODE_NORMAL || gSaveContext.save.cutsceneIndex >= CS_INDEX_0) {
         gSaveContext.nayrusLoveTimer = 0;
@@ -419,7 +424,9 @@ void Play_Init(GameState* thisx) {
     }
 #endif
 
-#if PLATFORM_N64
+#if CUTSCENE_MAKER
+    // cutscene-maker: vanilla entrance cutscenes never run in this build
+#elif PLATFORM_N64
     if ((B_80121220 != NULL && B_80121220->unk_54 != NULL && B_80121220->unk_54(this))) {
     } else {
         Cutscene_HandleEntranceTriggers(this);
@@ -544,12 +551,20 @@ void Play_Init(GameState* thisx) {
         DmaMgr_DmaRomToRam(0x03FEB000, gDebugCutsceneScript, sizeof(sDebugCutsceneScriptBuf));
     }
 #endif
+
+#if CUTSCENE_MAKER
+    Csm_OnPlayInit(this);
+#endif
 }
 
 void Play_Update(PlayState* this) {
     Input* input = this->state.input;
     s32 isPaused;
     s32 pad1;
+
+#if CUTSCENE_MAKER
+    Csm_Update(this);
+#endif
 
 #if DEBUG_FEATURES
     if ((SREG(1) < 0) || (DREG(0) != 0)) {
@@ -1608,6 +1623,10 @@ void Play_SpawnScene(PlayState* this, s32 sceneId, s32 spawn) {
     gSegments[2] = OS_K0_TO_PHYSICAL(this->sceneSegment);
 
     Play_InitScene(this, spawn);
+
+#if CUTSCENE_MAKER
+    Csm_OnSceneInit(this);
+#endif
 
 #if PLATFORM_N64
     if ((B_80121220 != NULL) && (B_80121220->unk_0C != NULL)) {

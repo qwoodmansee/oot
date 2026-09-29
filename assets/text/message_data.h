@@ -1,5 +1,9 @@
 #include "text/message_data.h"
 
+#if CUTSCENE_MAKER
+#include "../../src/cutscene_maker/generated/csm_messages.h"
+#endif
+
 /*
  * The following two messages should be kept last and in this order.
  * Message 0xFFFD must be last to not break the message debugger (see R_MESSAGE_DEBUGGER_TEXTID).
