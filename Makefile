@@ -900,6 +900,13 @@ $(BUILD_DIR)/assets/text/jpn_message_data_static.o: $(BUILD_DIR)/assets/text/mes
 $(BUILD_DIR)/assets/text/nes_message_data_static.o: $(BUILD_DIR)/assets/text/message_data.enc.nes.h
 $(BUILD_DIR)/assets/text/ger_message_data_static.o: $(BUILD_DIR)/assets/text/message_data.enc.nes.h
 $(BUILD_DIR)/assets/text/fra_message_data_static.o: $(BUILD_DIR)/assets/text/message_data.enc.nes.h
+
+ifeq ($(CUTSCENE_MAKER),1)
+# The generated cutscene-maker messages are included from assets/text/message_data.h; the encoding
+# rule does not track that include, so depend on it explicitly.
+$(BUILD_DIR)/assets/text/message_data.enc.nes.h: src/cutscene_maker/generated/csm_messages.h
+$(BUILD_DIR)/assets/text/message_data.enc.jpn.h: src/cutscene_maker/generated/csm_messages.h
+endif
 $(BUILD_DIR)/assets/text/staff_message_data_static.o: $(BUILD_DIR)/assets/text/message_data_staff.enc.nes.h
 
 $(BUILD_DIR)/assets/text/%.o: assets/text/%.c
