@@ -43,6 +43,7 @@ typedef struct CsmConfig {
     /* 0x0C */ const s16* objects;
     /* 0x10 */ const CsmActorSpawn* actors;
     /* 0x14 */ u16 scriptFrameCount;
+    /* 0x16 */ u8 tunic;        // 0 keeps the save's tunic, else EQUIP_VALUE_TUNIC_*
 } CsmConfig;
 
 // Read by the capture harness through the linker map. Keep the layout stable.

@@ -7,6 +7,8 @@
 #include "array_count.h"
 #include "printf.h"
 #include "actor.h"
+#include "inventory.h"
+#include "item.h"
 #include "object.h"
 #include "player.h"
 #include "play_state.h"
@@ -45,6 +47,9 @@ void Csm_BootSetup(struct GameState* gameState) {
     gSaveContext.nextCutsceneIndex = NEXT_CS_INDEX_NONE;
     gSaveContext.cutsceneTrigger = 0;
     gSaveContext.respawnFlag = 0;
+    if (gCsmConfig.tunic != 0) {
+        Inventory_ChangeEquipment(EQUIP_TYPE_TUNIC, gCsmConfig.tunic);
+    }
     PRINTF("[CSM] BOOT entrance=%d age=%d time=%04x layer=%d cs=%d\n", gCsmConfig.entranceIndex, gCsmConfig.linkAge,
            gCsmConfig.dayTime, gCsmConfig.layerMode, gCsmConfig.csLayer);
     SET_NEXT_GAMESTATE(gameState, Play_Init, PlayState);
