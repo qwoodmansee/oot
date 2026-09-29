@@ -1,8 +1,11 @@
 services:
   oot:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
     volumes:
       - ./:/oot
     tty: true

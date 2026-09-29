@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS build
+FROM --platform=linux/amd64 ubuntu:24.04 AS build
 
 ENV TZ=UTC
 ENV LANG=C.UTF-8
@@ -8,17 +8,20 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &
     apt-get install -y \
         binutils-mips-linux-gnu \
         build-essential \
+        gcc-multilib \
         pkg-config \
         python3 \
         python3-pip \
         python3-venv \
+        python3-dev \
         git \
         curl \
         wget \
         unzip \
         clang-tidy \
         clang-format \
-        libpng-dev && \
+        libpng-dev \
+        libxml2-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
