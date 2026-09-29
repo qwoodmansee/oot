@@ -141,10 +141,31 @@ static void Csm_SpawnActorsAndTrigger(struct PlayState* play) {
     PRINTF("[CSM] TRIGGER playFrames=%d\n", gCsmStatus.playFrames);
 }
 
+// Navi hint triggers (Elf_Msg, Elf_Msg2) open a textbox when Link stands in their box, which would
+// hold the cutscene. Kill them before they update; room actors can spawn a few frames after load,
+// so this runs every frame while the runtime is active.
+static void Csm_KillNaviHints(struct PlayState* play) {
+    s32 cat;
+
+    for (cat = 0; cat < ACTORCAT_MAX; cat++) {
+        Actor* actor = play->actorCtx.actorLists[cat].head;
+
+        while (actor != NULL) {
+            if ((actor->id == ACTOR_ELF_MSG) || (actor->id == ACTOR_ELF_MSG2)) {
+                Actor_Kill(actor);
+            }
+            actor = actor->next;
+        }
+    }
+}
+
 void Csm_Update(struct PlayState* play) {
     CutsceneContext* csCtx = &play->csCtx;
 
     gCsmStatus.playFrames++;
+    if (gCsmConfig.suppressNavi && (gCsmStatus.state >= CSM_STATE_SETTLING) && (gCsmStatus.state <= CSM_STATE_RUNNING)) {
+        Csm_KillNaviHints(play);
+    }
 
     switch (gCsmStatus.state) {
         case CSM_STATE_SETTLING:
