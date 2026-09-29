@@ -7,6 +7,7 @@
 #include "array_count.h"
 #include "printf.h"
 #include "actor.h"
+#include "bgcheck.h"
 #include "inventory.h"
 #include "item.h"
 #include "object.h"
@@ -124,6 +125,19 @@ static void Csm_SpawnActorsAndTrigger(struct PlayState* play) {
 
             Camera_RotateAroundPoint(&playerPosRot, &rel, &pos);
             yaw += playerPosRot.rot.y;
+        }
+        if (spawn->snapToFloor) {
+            CollisionPoly* poly;
+            Vec3f probe = pos;
+            f32 floorY;
+
+            probe.y += 400.0f;
+            floorY = BgCheck_EntityRaycastDown1(&play->colCtx, &poly, &probe);
+            if (floorY > BGCHECK_Y_MIN) {
+                pos.y = floorY;
+            } else {
+                PRINTF("[CSM] no floor under actor %d at %d %d %d\n", spawn->actorId, (s32)pos.x, (s32)pos.y, (s32)pos.z);
+            }
         }
         actor = Actor_Spawn(&play->actorCtx, play, spawn->actorId, pos.x, pos.y, pos.z, spawn->rot.x, yaw,
                             spawn->rot.z, spawn->params);

@@ -30,6 +30,7 @@ typedef struct CsmActorSpawn {
     /* 0x04 */ Vec3f pos;      // world units, or relative to Link when `relative` is set
     /* 0x10 */ Vec3s rot;      // binang; yaw is added to Link's yaw when `relative` is set
     /* 0x16 */ u8 relative;    // 1: pos and yaw are relative to Link (Z forward, X right, Y up)
+    /* 0x17 */ u8 snapToFloor; // 1: after spawning, drop the actor onto the first floor below pos.y + 400
 } CsmActorSpawn;
 
 typedef struct CsmConfig {
