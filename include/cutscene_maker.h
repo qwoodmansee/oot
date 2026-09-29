@@ -45,7 +45,8 @@ typedef struct CsmConfig {
     /* 0x10 */ const CsmActorSpawn* actors;
     /* 0x14 */ u16 scriptFrameCount;
     /* 0x16 */ u8 tunic;        // 0 keeps the save's tunic, else EQUIP_VALUE_TUNIC_*
-    /* 0x17 */ u8 suppressNavi; // 1: kill Navi hint trigger actors (Elf_Msg, Elf_Msg2) while the runtime is active
+    /* 0x17 */ u8 removedCount;      // actor ids to kill every frame while the runtime is active
+    /* 0x18 */ const s16* removedIds; // (Navi hint triggers, bosses whose intro would take the camera, ...)
 } CsmConfig;
 
 // Read by the capture harness through the linker map. Keep the layout stable.

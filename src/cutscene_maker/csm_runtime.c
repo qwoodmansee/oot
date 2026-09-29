@@ -141,18 +141,22 @@ static void Csm_SpawnActorsAndTrigger(struct PlayState* play) {
     PRINTF("[CSM] TRIGGER playFrames=%d\n", gCsmStatus.playFrames);
 }
 
-// Navi hint triggers (Elf_Msg, Elf_Msg2) open a textbox when Link stands in their box, which would
-// hold the cutscene. Kill them before they update; room actors can spawn a few frames after load,
+// Kill configured actor types before they update: Navi hint triggers open a textbox that holds the
+// cutscene, and some bosses start their own intro. Room actors can spawn a few frames after load,
 // so this runs every frame while the runtime is active.
-static void Csm_KillNaviHints(struct PlayState* play) {
+static void Csm_KillRemovedActors(struct PlayState* play) {
     s32 cat;
+    s32 i;
 
     for (cat = 0; cat < ACTORCAT_MAX; cat++) {
         Actor* actor = play->actorCtx.actorLists[cat].head;
 
         while (actor != NULL) {
-            if ((actor->id == ACTOR_ELF_MSG) || (actor->id == ACTOR_ELF_MSG2)) {
-                Actor_Kill(actor);
+            for (i = 0; i < gCsmConfig.removedCount; i++) {
+                if (actor->id == gCsmConfig.removedIds[i]) {
+                    Actor_Kill(actor);
+                    break;
+                }
             }
             actor = actor->next;
         }
@@ -163,8 +167,9 @@ void Csm_Update(struct PlayState* play) {
     CutsceneContext* csCtx = &play->csCtx;
 
     gCsmStatus.playFrames++;
-    if (gCsmConfig.suppressNavi && (gCsmStatus.state >= CSM_STATE_SETTLING) && (gCsmStatus.state <= CSM_STATE_RUNNING)) {
-        Csm_KillNaviHints(play);
+    if ((gCsmConfig.removedCount != 0) && (gCsmStatus.state >= CSM_STATE_SETTLING) &&
+        (gCsmStatus.state <= CSM_STATE_RUNNING)) {
+        Csm_KillRemovedActors(play);
     }
 
     switch (gCsmStatus.state) {
