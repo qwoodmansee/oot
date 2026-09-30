@@ -483,6 +483,15 @@ SEQUENCE_EXTRACT_FILES := $(foreach dir,$(SEQUENCE_EXTRACT_DIRS),$(wildcard $(di
 SEQUENCE_O_FILES       := $(foreach f,$(SEQUENCE_FILES),$(BUILD_DIR)/$(f:.seq=.o)) $(foreach f,$(SEQUENCE_EXTRACT_FILES:.seq=.o),$(f:$(EXTRACTED_DIR)/%=$(BUILD_DIR)/%))
 SEQUENCE_DEP_FILES     := $(foreach f,$(SEQUENCE_O_FILES),$(f:.o=.d))
 
+ifeq ($(CUTSCENE_MAKER),1)
+# cutscene-maker custom music slots, written by the cutscene-maker repo into the generated dir.
+# Four fixed slots (NA_BGM_CSM_0..3); a slot without a generated file gets a silent placeholder.
+CSM_SEQ_FILES      := $(foreach n,0 1 2 3,src/cutscene_maker/generated/csm_music_$(n).seq)
+CSM_SEQ_O_FILES    := $(foreach f,$(CSM_SEQ_FILES),$(BUILD_DIR)/assets/audio/sequences/$(notdir $(f:.seq=.o)))
+SEQUENCE_O_FILES   += $(CSM_SEQ_O_FILES)
+SEQUENCE_DEP_FILES += $(foreach f,$(CSM_SEQ_O_FILES),$(f:.o=.d))
+endif
+
 SEQUENCE_TABLE := include/tables/sequence_table.h
 
 # create extracted directory
@@ -1119,6 +1128,17 @@ $(BUILD_DIR)/assets/audio/sequences/%.o: $(EXTRACTED_DIR)/assets/audio/sequences
 ifeq ($(AUDIO_BUILD_DEBUG),1)
 	$(OBJCOPY) -O binary -j.data $@ $(@:.o=.aseq)
 	@(cmp $(@:.o=.aseq) $(patsubst $(BUILD_DIR)/assets/audio/sequences/%,$(EXTRACTED_DIR)/baserom_audiotest/audioseq_files/%,$(@:.o=.aseq)) && echo "$(<F) OK" || (mkdir -p NONMATCHINGS/sequences && cp $(@:.o=.aseq) NONMATCHINGS/sequences/$(@F:.o=.aseq)))
+endif
+
+ifeq ($(CUTSCENE_MAKER),1)
+src/cutscene_maker/generated/csm_music_%.seq:
+	@mkdir -p $(dir $@)
+	@printf '#include "aseq.h"\n#include "Soundfont_3.h"\n.startseq Sequence_Csm$*\n.sequence SEQ_MAIN\n    mutebhv 0x20\n    mutescale 50\n    initchan 0\n    end\n.endseq Sequence_Csm$*\n' > $@
+	@echo "wrote silent placeholder $@"
+
+$(BUILD_DIR)/assets/audio/sequences/csm_music_%.o: src/cutscene_maker/generated/csm_music_%.seq include/audio/aseq.h $(SEQUENCE_TABLE) | $(SOUNDFONT_HEADERS)
+	$(SEQ_CPP) $(SEQ_CPPFLAGS) -MD -MP -MT $@ $< -o $(@:.o=.s)
+	$(AS) $(ASFLAGS) -I $(BUILD_DIR)/assets/audio/soundfonts -I include/audio -I $(dir $<) $(@:.o=.s) -o $@
 endif
 
 -include $(SEQUENCE_DEP_FILES)

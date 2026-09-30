@@ -130,3 +130,11 @@ DEFINE_SEQUENCE    (Sequence_106,       NA_BGM_STAFF_4,          MEDIUM_CART, CA
 DEFINE_SEQUENCE    (Sequence_107,       NA_BGM_FIRE_BOSS,        MEDIUM_CART, CACHE_LOAD_TEMPORARY,  0                                      ) // fire_boss
 DEFINE_SEQUENCE    (Sequence_108,       NA_BGM_TIMED_MINI_GAME,  MEDIUM_CART, CACHE_LOAD_TEMPORARY,  SEQ_FLAG_RESTORE                       ) // timed_mini_game
 DEFINE_SEQUENCE    (Sequence_109,       NA_BGM_CUTSCENE_EFFECTS, MEDIUM_CART, CACHE_LOAD_TEMPORARY,  0                                      ) // cutscene_effects
+
+#if CUTSCENE_MAKER
+/* cutscene-maker custom music slots; the .seq files live in src/cutscene_maker/generated/ */
+DEFINE_SEQUENCE    (Sequence_Csm0,      NA_BGM_CSM_0,           MEDIUM_CART, CACHE_LOAD_TEMPORARY,  0                                      ) // csm_music_0
+DEFINE_SEQUENCE    (Sequence_Csm1,      NA_BGM_CSM_1,           MEDIUM_CART, CACHE_LOAD_TEMPORARY,  0                                      ) // csm_music_1
+DEFINE_SEQUENCE    (Sequence_Csm2,      NA_BGM_CSM_2,           MEDIUM_CART, CACHE_LOAD_TEMPORARY,  0                                      ) // csm_music_2
+DEFINE_SEQUENCE    (Sequence_Csm3,      NA_BGM_CSM_3,           MEDIUM_CART, CACHE_LOAD_TEMPORARY,  0                                      ) // csm_music_3
+#endif

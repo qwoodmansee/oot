@@ -287,6 +287,12 @@ beginseg
     include "$(BUILD_DIR)/assets/audio/sequences/seq_107.o"
     include "$(BUILD_DIR)/assets/audio/sequences/seq_108.o"
     include "$(BUILD_DIR)/assets/audio/sequences/seq_109.prg.o"
+#if CUTSCENE_MAKER
+    include "$(BUILD_DIR)/assets/audio/sequences/csm_music_0.o"
+    include "$(BUILD_DIR)/assets/audio/sequences/csm_music_1.o"
+    include "$(BUILD_DIR)/assets/audio/sequences/csm_music_2.o"
+    include "$(BUILD_DIR)/assets/audio/sequences/csm_music_3.o"
+#endif
 endseg
 
 beginseg
